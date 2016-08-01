@@ -39,6 +39,7 @@
 <%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
 
 <link href="css/idpmgt.css" rel="stylesheet" type="text/css" media="all"/>
 <carbon:breadcrumb label="breadcrumb.service.provider" resourceBundle="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources"
@@ -491,13 +492,21 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
     			return false;
     		}
         	claimMappinRowID++;
+
     		var idpClaimListDiv = $('#localClaimsList').clone();
+			if($('input:radio[name=claim_dialect]:checked').val() == "external") {
+				var externalDialectURI = $('#external_dialect_uri').val();
+				var externalClaimsList = 'externalClaimsList_' + externalDialectURI;
+
+				idpClaimListDiv = $('#'+externalClaimsList).clone();
+			}
+
     		if(idpClaimListDiv.length > 0){
     			$(idpClaimListDiv.find('select')).attr('id','idpClaim_'+ claimMappinRowID);
     			$(idpClaimListDiv.find('select')).attr('name','idpClaim_'+ claimMappinRowID);
     			$(idpClaimListDiv.find('select')).addClass( "idpClaim" );
     		}
-        	if($('input:radio[name=claim_dialect]:checked').val() == "local")
+        	if($('input:radio[name=claim_dialect]:checked').val() == "local" || $('input:radio[name=claim_dialect]:checked').val() == "external")
         	{
         		$('.spClaimHeaders').hide();
         		$('#roleMappingSelection').hide();
@@ -572,7 +581,39 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
         			$('#claimMappingAddTable').hide();
         			changeDialectUIs(element);
         		}
+
+        		if (element.val() == 'external') {
+        			$('#external_dialect_uri').prop( "disabled", false );
+        		} else {
+        			$('#external_dialect_uri').prop( "disabled", true );
+        		}
         });
+
+		$("[name=external_dialect_uri]").change(function(){
+			$('#claim_dialect_external').prop('selected', true);
+
+			var element = $(this);
+			claimMappinRowID = -1;
+
+			if($('.idpClaim').length > 0){
+				CARBON.showConfirmationDialog('Changing dialect will delete all claim mappings. Do you want to proceed?',
+						function (){
+							$.each($('.idpClaim'), function(){
+								$(this).parent().parent().remove();
+							});
+							$('#claimMappingAddTable').hide();
+							changeDialectUIs($('#claim_dialect_external'));
+						},
+						function(){
+							//Reset checkboxes
+							$('#claim_dialect_wso2').attr('checked', (element.val() == 'custom'));
+							$('#claim_dialect_custom').attr('checked', (element.val() == 'local'));
+						});
+			}else{
+				$('#claimMappingAddTable').hide();
+				changeDialectUIs($('#claim_dialect_external'));
+			}
+		});
         
         if($('#isNeedToUpdate').val() == 'true'){
         	$('#isNeedToUpdate').val('false');
@@ -634,6 +675,27 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
 					}
 				}
 			} 
+		}else if(element.val() == 'external'){
+			$('#addClaimUrisLbl').text('Requested Claims:');
+			$('#roleMappingSelection').hide();
+
+			var externalDialectURI = $('#external_dialect_uri').val();
+			var external_calim_uris = 'external_calim_uris_' + externalDialectURI;
+
+			if($('#'+external_calim_uris).length > 0 && $('#'+external_calim_uris).val().length > 0){
+				var dataArray = $('#'+external_calim_uris).val().split(',');
+				if(dataArray.length > 0){
+					var optionsList = "";
+					$.each(dataArray, function(){
+						if(this.length > 0){
+							optionsList += '<option value='+this+'>'+this+'</option>'
+						}
+					});
+					if(optionsList.length > 0){
+						$('#subject_claim_uri').append(optionsList);
+					}
+				}
+			}
 		}else{
 			$('#addClaimUrisLbl').text('Identity Provider Claim URIs:');
 			$('#roleMappingSelection').show();
@@ -817,6 +879,44 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
                     			<input type="radio" id="claim_dialect_custom" name="claim_dialect" value="custom" <%=!isLocalClaimsSelected ? "checked" : ""%>><label for="claim_dialect_custom" style="cursor: pointer;"><fmt:message key="config.application.claim.dialect.custom"/></label>
                     		</td>
                     	</tr>
+					   <tr>
+						   <td style="width:15%" class="leftCol-med labelField">
+						   </td>
+						   <td class="leftCol-med">
+							   <input type="radio" id="claim_dialect_external" name="claim_dialect" value="external"
+									   <%=!isLocalClaimsSelected ? "checked" : ""%>><label
+								   for="claim_dialect_external" style="cursor: pointer;"><fmt:message
+								   key="config.application.claim.dialect.external"/></label>
+						   </td>
+						   <td>
+							   <select class="leftCol-med" id="external_dialect_uri" name="external_dialect_uri" style="
+							   margin-left: 5px;"  disabled>
+								   <% if(isLocalClaimsSelected){
+									   List<String> claimDialectList = appBean.getClaimDialectList();
+
+									   for(int i=0; i<claimDialectList.size(); i++) {
+										   String dialectName = claimDialectList.get(i);
+										   if(appBean.getSubjectClaimUri() != null &&
+												   dialectName.equals(appBean.getSubjectClaimUri())){%>
+								   <option value="<%=i%>" selected> <%=Encode.forHtmlContent(dialectName)%></option>
+								   		<%}else{%>
+								   <option value="<%=i%>"> <%=Encode.forHtmlContent(dialectName)%></option>
+								   		<%}
+								   		}
+								   } else {
+									   for(Map.Entry<String, String> entry : claimMapping.entrySet()){
+										   if(entry.getValue() != null && !entry.getValue().isEmpty()){
+											   if(appBean.getSubjectClaimUri() != null && appBean.getSubjectClaimUri().equals(entry.getValue())) { %>
+								   <option value="<%=Encode.forHtmlAttribute(entry.getValue())%>" selected> <%=Encode.forHtmlContent(entry.getValue())%></option>
+								   			<% } else { %>
+								   <option value="<%=Encode.forHtmlAttribute(entry.getValue())%>"> <%=Encode.forHtmlContent(entry.getValue())%></option>
+								  			 <%}
+								   			}
+								   		}
+								   } %>
+							   </select>
+						   </td>
+					   </tr>
                     </table>
                     <table  class="carbonFormTable">
 					<tr>
@@ -930,6 +1030,35 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
 							</select>
 					</div>
 					<input type="hidden" id ="local_calim_uris" value="<%=Encode.forHtmlAttribute(allLocalClaims.toString())%>" >
+
+
+				<!-- Start dialect claims -->
+				    <%
+						Map<String, String[]> claimURIMap = appBean.getClaimURIMap();
+						List<String> claimDialectList = appBean.getClaimDialectList();
+
+						for(int i=0; i<claimDialectList.size(); i++) {
+							String dialectName = claimDialectList.get(i);
+					%>
+
+					<div id="externalClaimsList_<%=i%>" style="display: none;">
+						<select style="float:left; width: 100%">
+							<% String[] externalClaims = claimURIMap.get(dialectName);
+								StringBuffer allExternalClaims = new StringBuffer();
+								for(String externalClaim : externalClaims) { %>
+							<option value="<%=Encode.forHtmlAttribute(externalClaim)%>"> <%=Encode.forHtmlContent(externalClaim)%></option>
+							<%
+									allExternalClaims.append(externalClaim + ",");
+								} %>
+						</select>
+					</div>
+					<input type="hidden" id ="external_calim_uris_<%=i%>" value="<%=Encode.forHtmlAttribute(allExternalClaims.toString())%>" >
+
+                    <%
+						}
+                    %>
+				<!-- End dialect claims -->
+
                   	<div id="roleMappingSelection" style="<%=isLocalClaimsSelected ? "display:none" : ""%>">
                     <table class="carbonFormTable" style="padding-top: 10px">
                   	<tr>

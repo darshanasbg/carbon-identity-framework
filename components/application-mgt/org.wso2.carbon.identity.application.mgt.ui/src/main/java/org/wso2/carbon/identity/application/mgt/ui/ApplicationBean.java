@@ -80,6 +80,8 @@ public class ApplicationBean {
     private String passiveSTSWReply;
     private String openid;
     private String[] claimUris;
+    private List<String> claimDialectList;
+    private Map<String, String[]> claimURIMap;
     private List<InboundAuthenticationRequestConfig> inboundAuthenticationRequestConfigs;
     private List<String> standardInboundAuthTypes;
 
@@ -850,6 +852,28 @@ public class ApplicationBean {
 
     public void setClaimUris(String[] claimUris) {
         this.claimUris = claimUris;
+    }
+
+    /**
+     * @return
+     */
+    public List<String> getClaimDialectList() {
+        return claimDialectList;
+    }
+
+    public void setClaimDialectList(List<String> claimDialectList) {
+        this.claimDialectList = claimDialectList;
+    }
+
+    /**
+     * @return
+     */
+    public Map<String, String[]> getClaimURIMap() {
+        return claimURIMap;
+    }
+
+    public void setClaimURIMap(Map<String, String[]> claimURIMap) {
+        this.claimURIMap = claimURIMap;
     }
 
 
