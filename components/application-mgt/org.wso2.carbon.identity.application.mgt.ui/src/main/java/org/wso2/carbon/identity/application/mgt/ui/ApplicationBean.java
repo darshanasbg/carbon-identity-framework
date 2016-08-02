@@ -488,6 +488,13 @@ public class ApplicationBean {
         return null;
     }
 
+    public String getClaimDialectUri() {
+        if (serviceProvider.getClaimConfig() != null) {
+            return serviceProvider.getClaimConfig().getClaimDialectURI();
+        }
+        return null;
+    }
+
     public String getAttributeConsumingServiceIndex() {
         if (attrConsumServiceIndex != null) {
             return attrConsumServiceIndex;
@@ -1329,6 +1336,14 @@ public class ApplicationBean {
         if (request.getParameter("claim_dialect") != null
             && "custom".equals(request.getParameter("claim_dialect"))) {
             serviceProvider.getClaimConfig().setLocalClaimDialect(false);
+        } else if (request.getParameter("claim_dialect") != null
+                && "external".equals(request.getParameter("claim_dialect"))) {
+            serviceProvider.getClaimConfig().setLocalClaimDialect(true);
+
+            String claimDialectUri = request.getParameter("claim_dialect_uri");
+            if (StringUtils.isNotBlank(claimDialectUri)) {
+                serviceProvider.getClaimConfig().setClaimDialectURI(claimDialectUri);
+            }
         } else {
             serviceProvider.getClaimConfig().setLocalClaimDialect(true);
         }

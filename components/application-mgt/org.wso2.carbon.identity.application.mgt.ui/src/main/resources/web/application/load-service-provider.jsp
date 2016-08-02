@@ -31,8 +31,6 @@
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.ApplicationBean"%>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.util.ApplicationMgtUIUtil"%>
 <%@ page import="org.wso2.carbon.identity.application.mgt.ui.client.ClaimMetadataAdminClient" %>
-<%@ page import="org.wso2.carbon.identity.claim.metadata.mgt.stub.dto.ClaimDialectDTO" %>
-<%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.List" %>
 
@@ -73,7 +71,7 @@
 				ApplicationManagementServiceClient serviceClient = new ApplicationManagementServiceClient(cookie, backendServerURL, configContext);
 				ClaimMetadataAdminClient claimMetadataAdminClient = new ClaimMetadataAdminClient(cookie, backendServerURL, configContext);
 				ServiceProvider serviceProvider = serviceClient.getApplication(spName);
-		
+
 				IdentityProvider[] federatedIdPs = serviceClient.getAllFederatedIdentityProvider();
 				String[] claimUris = serviceClient.getAllClaimUris();
 				LocalAuthenticatorConfig[] localAuthenticatorConfigs = serviceClient.getAllLocalAuthenticators();

@@ -40,6 +40,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.Set" %>
+<%@ page import="org.apache.commons.lang.StringUtils" %>
 
 <link href="css/idpmgt.css" rel="stylesheet" type="text/css" media="all"/>
 <carbon:breadcrumb label="breadcrumb.service.provider" resourceBundle="org.wso2.carbon.identity.application.mgt.ui.i18n.Resources"
@@ -71,6 +72,8 @@ location.href = "list-service-providers.jsp";
 	Map<String, String> claimMapping = appBean.getClaimMapping();
 	Map<String, String> roleMapping = appBean.getRoleMapping();
 	boolean isLocalClaimsSelected = appBean.isLocalClaimsSelected();
+	String claimDialectUri = appBean.getClaimDialectUri();
+	List<String> claimDialectList = appBean.getClaimDialectList();
     String idPName = request.getParameter("idPName");
     String action = request.getParameter("action");
     String[] userStoreDomains = null;
@@ -590,7 +593,12 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
         });
 
 		$("[name=external_dialect_uri]").change(function(){
-			$('#claim_dialect_external').prop('selected', true);
+			var externalDialectID = $('#external_dialect_uri').val();
+			var external_dialect_uri = 'external_dialect_uri_' + externalDialectID;
+
+			if($('#'+external_dialect_uri).length > 0 && $('#'+external_dialect_uri).val().length > 0){
+				$('#claim_dialect_uri').val($('#'+external_dialect_uri).val());
+			}
 
 			var element = $(this);
 			claimMappinRowID = -1;
@@ -869,7 +877,7 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
                     			<fmt:message key="config.application.claim.dialect.select" />:
                     		</td>
                     		<td class="leftCol-med">
-                    			<input type="radio" id="claim_dialect_wso2" name="claim_dialect" value="local" <%=isLocalClaimsSelected ? "checked" : ""%>><label for="claim_dialect_wso2" style="cursor: pointer;"><fmt:message key="config.application.claim.dialect.local"/></label>
+                    			<input type="radio" id="claim_dialect_wso2" name="claim_dialect" value="local" <%=isLocalClaimsSelected && StringUtils.isBlank(claimDialectUri) ? "checked" : ""%>><label for="claim_dialect_wso2" style="cursor: pointer;"><fmt:message key="config.application.claim.dialect.local"/></label>
                     		</td>
                     	</tr>
                 		<tr>
@@ -884,37 +892,29 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
 						   </td>
 						   <td class="leftCol-med">
 							   <input type="radio" id="claim_dialect_external" name="claim_dialect" value="external"
-									   <%=!isLocalClaimsSelected ? "checked" : ""%>><label
+									   <%=isLocalClaimsSelected && StringUtils.isNotBlank(claimDialectUri) ? "checked"
+									   : ""%>><label
 								   for="claim_dialect_external" style="cursor: pointer;"><fmt:message
 								   key="config.application.claim.dialect.external"/></label>
 						   </td>
 						   <td>
 							   <select class="leftCol-med" id="external_dialect_uri" name="external_dialect_uri" style="
-							   margin-left: 5px;"  disabled>
-								   <% if(isLocalClaimsSelected){
-									   List<String> claimDialectList = appBean.getClaimDialectList();
-
-									   for(int i=0; i<claimDialectList.size(); i++) {
+							   margin-left: 5px;" <%=isLocalClaimsSelected && StringUtils.isNotBlank(claimDialectUri)
+									   ? "" : "disabled"%>>
+								   <%  for(int i=0; i<claimDialectList.size(); i++) {
 										   String dialectName = claimDialectList.get(i);
-										   if(appBean.getSubjectClaimUri() != null &&
-												   dialectName.equals(appBean.getSubjectClaimUri())){%>
+
+										   if(isLocalClaimsSelected && StringUtils.isNotBlank(claimDialectUri) &&
+										   dialectName.equals(claimDialectUri)){%>
 								   <option value="<%=i%>" selected> <%=Encode.forHtmlContent(dialectName)%></option>
 								   		<%}else{%>
 								   <option value="<%=i%>"> <%=Encode.forHtmlContent(dialectName)%></option>
 								   		<%}
-								   		}
-								   } else {
-									   for(Map.Entry<String, String> entry : claimMapping.entrySet()){
-										   if(entry.getValue() != null && !entry.getValue().isEmpty()){
-											   if(appBean.getSubjectClaimUri() != null && appBean.getSubjectClaimUri().equals(entry.getValue())) { %>
-								   <option value="<%=Encode.forHtmlAttribute(entry.getValue())%>" selected> <%=Encode.forHtmlContent(entry.getValue())%></option>
-								   			<% } else { %>
-								   <option value="<%=Encode.forHtmlAttribute(entry.getValue())%>"> <%=Encode.forHtmlContent(entry.getValue())%></option>
-								  			 <%}
-								   			}
-								   		}
-								   } %>
+										}
+									%>
 							   </select>
+
+							   <input type="hidden" name="claim_dialect_uri" id="claim_dialect_uri" value="<%=StringUtils.isNotBlank(claimDialectUri) ? Encode.forHtmlAttribute(claimDialectUri) : ""%>">
 						   </td>
 					   </tr>
                     </table>
@@ -1035,7 +1035,6 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
 				<!-- Start dialect claims -->
 				    <%
 						Map<String, String[]> claimURIMap = appBean.getClaimURIMap();
-						List<String> claimDialectList = appBean.getClaimDialectList();
 
 						for(int i=0; i<claimDialectList.size(); i++) {
 							String dialectName = claimDialectList.get(i);
@@ -1053,6 +1052,7 @@ function updateBeanAndPost(postURL, data, redirectURLOnSuccess) {
 						</select>
 					</div>
 					<input type="hidden" id ="external_calim_uris_<%=i%>" value="<%=Encode.forHtmlAttribute(allExternalClaims.toString())%>" >
+					<input type="hidden" id ="external_dialect_uri_<%=i%>" value="<%=Encode.forHtmlAttribute(dialectName)%>" >
 
                     <%
 						}
