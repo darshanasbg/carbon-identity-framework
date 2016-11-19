@@ -45,7 +45,7 @@
     }
 
     if (externalClaim == null) {
-        String BUNDLE = "org.wso2.carbon.claim.mgt.ui.i18n.Resources";
+        String BUNDLE = "org.wso2.carbon.identity.claim.metadata.mgt.ui.i18n.Resources";
         ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE, request.getLocale());
 
         String unformatted = resourceBundle.getString("error.while.loading.external.claim");
