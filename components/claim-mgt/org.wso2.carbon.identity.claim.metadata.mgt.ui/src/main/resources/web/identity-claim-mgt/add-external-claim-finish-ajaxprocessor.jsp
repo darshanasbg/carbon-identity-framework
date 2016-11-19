@@ -74,7 +74,8 @@
         CarbonUIMessage.sendCarbonUIMessage(message, CarbonUIMessage.ERROR, request);
         forwardTo = "add-external-claim.jsp?externalClaimDialectURI=" +
                 Encode.forUriComponent(externalClaimDialectURI) + "&externalClaimURI=" +
-                Encode.forUriComponent(externalClaimURI) + "&ordinal=2";
+                Encode.forUriComponent(externalClaimURI) + "&mappedLocalClaimURI=" +
+                Encode.forUriComponent(mappedLocalClaimURI) + "&ordinal=2";
 
     }
 %>

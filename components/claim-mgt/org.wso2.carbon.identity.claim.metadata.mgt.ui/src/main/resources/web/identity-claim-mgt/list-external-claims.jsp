@@ -44,7 +44,6 @@
             externalClaims = new ExternalClaimDTO[0];
         }
 
-        System.out.println("externalClaims : " + externalClaims);
         session.setAttribute("externalClaims-"+ externalClaimDialectURI, externalClaims);
     } catch (Exception e) {
         String BUNDLE = "org.wso2.carbon.claim.mgt.ui.i18n.Resources";
