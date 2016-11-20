@@ -144,7 +144,7 @@
 
             <script type="text/javascript">
 
-                function removeItem(externalClaimDialectURI, externalClaimURI) {
+                function removeItem(externalClaimDialectURI, externalClaimURI, externalClaimURIForMessage) {
 
                     function doDelete() {
                         $.ajax({
@@ -165,7 +165,7 @@
                         });
                     }
 
-                    CARBON.showConfirmationDialog('<fmt:message key="remove.message1"/>' + externalClaimURI +
+                    CARBON.showConfirmationDialog('<fmt:message key="remove.message1"/> ' + externalClaimURIForMessage +
                             '<fmt:message key="remove.message2"/>', doDelete, null);
                 }
 
@@ -185,7 +185,8 @@
                 <a href="#" class="icon-link deleteLink"
                    style="background-image:url(../identity-claim-mgt/images/delete.gif);"
                    onclick="removeItem('<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimDialectURI))%>',
-                           '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimURI))%>');return
+                           '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimURI))%>',
+                           '<%=Encode.forJavaScriptAttribute(externalClaimURI)%>');return
                            false;"><fmt:message key='delete.external.claim'/>
                 </a>
             </div>

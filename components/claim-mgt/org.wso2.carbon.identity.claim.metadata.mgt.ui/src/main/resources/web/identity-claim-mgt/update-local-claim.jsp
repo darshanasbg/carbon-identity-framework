@@ -280,7 +280,7 @@
                     }
                 }
 
-                function removeItem(localClaimURI, localClaimslength) {
+                function removeItem(localClaimURI, localClaimURIForMessage, localClaimslength) {
                     if (localClaimslength <= 1) {
                         CARBON.showWarningDialog('<fmt:message key="cannot.remove.default.carbon.dialect.all.claims"/>');
                         return false;
@@ -302,8 +302,8 @@
                             });
                         }
 
-                        CARBON.showConfirmationDialog('<fmt:message key="remove.message1"/>' + localClaimURI +
-                                '<fmt:message key="remove.message2"/>', doDelete, null);
+                        CARBON.showConfirmationDialog('<fmt:message key="remove.message1"/> ' +
+                                localClaimURIForMessage + '<fmt:message key="remove.message2"/>', doDelete, null);
                     }
                 }
 
@@ -339,6 +339,7 @@
                         for (var i = 0; i < attributeAddTableRowCount; i++) {
                             var row = attributeAddTable.rows[i];
                             var mappedAttributeValue = row.getElementsByTagName("input")[0].value;
+
                             if (mappedAttributeValue == '') {
                                 CARBON.showWarningDialog('<fmt:message key="attribute.mapping.cannot.be.empty"/>');
                                 return false;
@@ -386,6 +387,7 @@
             <a href="#" class="icon-link deleteLink"
                style="background-image:url(../identity-claim-mgt/images/delete.gif);"
                onclick="removeItem('<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(localClaimURI))%>',
+                       '<%=Encode.forJavaScriptAttribute(localClaimURI)%>',
                        '<%=Encode.forJavaScriptAttribute(String.valueOf(localClaims.length))%>');return
                        false;"><fmt:message key='delete.local.claim'/>
             </a>

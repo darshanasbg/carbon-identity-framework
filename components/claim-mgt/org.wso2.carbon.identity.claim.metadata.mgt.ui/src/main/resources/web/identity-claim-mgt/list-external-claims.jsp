@@ -92,7 +92,7 @@
             };
             jQuery("a.trigger-title").click(triggerHandler);
         });
-        function removeItem(externalClaimDialectURI, externalClaimURI) {
+        function removeItem(externalClaimDialectURI, externalClaimURI, externalClaimURIForMessage) {
             function doDelete() {
                 $.ajax({
                     type: 'POST',
@@ -112,8 +112,8 @@
                 });
             }
 
-            CARBON.showConfirmationDialog('<fmt:message key="remove.message1"></fmt:message>' + externalClaimURI +
-                    '<fmt:message key="remove.message2"/>', doDelete, null);
+            CARBON.showConfirmationDialog('<fmt:message key="remove.message1"></fmt:message> ' +
+                    externalClaimURIForMessage + '<fmt:message key="remove.message2"/>', doDelete, null);
         }
     </script>
     <style type="text/css">
@@ -231,7 +231,8 @@
                 <a href="#" class="icon-link deleteLink"
                    style="background-image:url(../identity-claim-mgt/images/delete.gif);"
                    onclick="removeItem('<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimDialectURI))%>',
-                           '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimURI))%>');return
+                           '<%=Encode.forJavaScriptAttribute(Encode.forUriComponent(externalClaimURI))%>',
+                           '<%=Encode.forJavaScriptAttribute(externalClaimURI)%>');return
                            false;"><fmt:message key='delete'/>
                 </a>
 
