@@ -23,12 +23,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.CarbonException;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.core.util.AnonymousSessionUtil;
 import org.wso2.carbon.core.util.PermissionUpdateUtil;
 import org.wso2.carbon.identity.application.authentication.framework.exception.FrameworkException;
 import org.wso2.carbon.identity.application.authentication.framework.handler.provisioning.ProvisioningHandler;
 import org.wso2.carbon.identity.application.authentication.framework.internal.FrameworkServiceComponent;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.user.profile.mgt.UserProfileAdmin;
+import org.wso2.carbon.identity.user.profile.mgt.UserProfileException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
@@ -38,7 +43,6 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
-import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +107,11 @@ public class DefaultProvisioningHandler implements ProvisioningHandler {
             // addingRoles = newRoles AND allExistingRoles
             Collection<String> addingRoles = getRolesToAdd(userStoreManager, newRoles);
 
+            String idp = attributes.get(FrameworkConstants.IDP_ID);
+            String subjectVal = attributes.get(FrameworkConstants.ASSOCIATED_ID);
+            attributes.remove(FrameworkConstants.IDP_ID);
+            attributes.remove(FrameworkConstants.ASSOCIATED_ID);
+
             Map<String, String> userClaims = prepareClaimMappings(attributes);
 
             if (userStoreManager.isExistingUser(username)) {
@@ -135,8 +144,20 @@ public class DefaultProvisioningHandler implements ProvisioningHandler {
 
             } else {
 
+                // Inject test values
+                String adminUsername = realm.getUserStoreManager().getRealmConfiguration().getAdminUserName();
+                String emailClaimURI = "http://wso2.org/claims/emailaddress";
+                String adminEmailValue = realm.getUserStoreManager().getUserClaimValue(adminUsername, emailClaimURI,
+                        "default");
+                userClaims.put(emailClaimURI, adminEmailValue);
+                // Inject test value ends
+
                 userStoreManager.addUser(username, generatePassword(), addingRoles.toArray(
                         new String[addingRoles.size()]), userClaims, null);
+
+                // Associate User
+                associateUser(username, userStoreDomain, tenantDomain, subjectVal, idp);
+
 
                 if (log.isDebugEnabled()) {
                     log.debug("Federated user: " + username
@@ -151,6 +172,33 @@ public class DefaultProvisioningHandler implements ProvisioningHandler {
             throw new FrameworkException("Error while provisioning user : " + subject, e);
         } finally {
             IdentityUtil.clearIdentityErrorMsg();
+        }
+    }
+
+    protected void associateUser(String username, String userStoreDomain, String tenantDomain, String subject,
+                                 String idp) throws FrameworkException {
+
+        String usernameWithUserstoreDomain = UserCoreUtil.addDomainToName(username, userStoreDomain);
+        try {
+            // start tenant flow
+            FrameworkUtils.startTenantFlow(tenantDomain);
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(usernameWithUserstoreDomain);
+
+            if (!StringUtils.isEmpty(idp) && !StringUtils.isEmpty(subject)) {
+                UserProfileAdmin userProfileAdmin = UserProfileAdmin.getInstance();
+                userProfileAdmin.associateID(idp, subject);
+
+                if (log.isDebugEnabled()) {
+                    log.debug("Associating local user: " + usernameWithUserstoreDomain + " in tenant: " +
+                            tenantDomain + " to the federated subject : " + subject + " in IdP: " + idp);
+                }
+            }
+        } catch (UserProfileException e) {
+            throw new FrameworkException("Error while associating local user: " + usernameWithUserstoreDomain +
+                    " in tenant: " + tenantDomain + " to the federated subject : " + subject + " in IdP: " + idp, e);
+        } finally {
+             // end tenant flow
+             FrameworkUtils.endTenantFlow();
         }
     }
 

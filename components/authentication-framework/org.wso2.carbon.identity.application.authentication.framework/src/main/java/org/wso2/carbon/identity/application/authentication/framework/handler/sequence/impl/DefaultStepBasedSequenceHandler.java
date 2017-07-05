@@ -85,11 +85,9 @@ public class DefaultStepBasedSequenceHandler implements StepBasedSequenceHandler
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AuthenticationContext context) throws FrameworkException {
-
         if (log.isDebugEnabled()) {
             log.debug("Executing the Step Based Authentication...");
         }
-
         while (!context.getSequenceConfig().isCompleted()) {
 
             int currentStep = context.getCurrentStep();
@@ -101,7 +99,6 @@ public class DefaultStepBasedSequenceHandler implements StepBasedSequenceHandler
             }
 
             StepConfig stepConfig = context.getSequenceConfig().getStepMap().get(currentStep);
-
             // if the current step is completed
             if (stepConfig != null && stepConfig.isCompleted()) {
                 stepConfig.setCompleted(false);
@@ -271,6 +268,48 @@ public class DefaultStepBasedSequenceHandler implements StepBasedSequenceHandler
                 extAttrs = stepConfig.getAuthenticatedUser().getUserAttributes();
                 extAttibutesValueMap = FrameworkUtils.getClaimMappings(extAttrs, false);
 
+                if (stepConfig.isSubjectAttributeStep()) {
+
+                    subjectAttributesFoundInStep = true;
+
+                    String idpRoleClaimUri = getIdpRoleClaimUri(externalIdPConfig);
+
+                    locallyMappedUserRoles = getLocallyMappedUserRoles(sequenceConfig,
+                            externalIdPConfig, extAttibutesValueMap, idpRoleClaimUri);
+
+                    if (idpRoleClaimUri != null && getServiceProviderMappedUserRoles(sequenceConfig,
+                            locallyMappedUserRoles) != null) {
+                        extAttibutesValueMap.put(idpRoleClaimUri, getServiceProviderMappedUserRoles(sequenceConfig,
+                                locallyMappedUserRoles));
+                    }
+
+                    if (mappedAttrs == null || mappedAttrs.isEmpty()) {
+                        // do claim handling
+                        mappedAttrs = handleClaimMappings(stepConfig, context,
+                                extAttibutesValueMap, true);
+                        // external claim values mapped to local claim uris.
+                        localClaimValues = (Map<String, String>) context
+                                .getProperty(FrameworkConstants.UNFILTERED_LOCAL_CLAIM_VALUES);
+
+                        idpClaimValues = (Map<String, String>) context
+                                .getProperty(FrameworkConstants.UNFILTERED_IDP_CLAIM_VALUES);
+                    }
+
+                }
+
+                // do user provisioning. we should provision the user with the original external
+                // subject identifier.
+                if (externalIdPConfig.isProvisioningEnabled()) {
+
+                    if (localClaimValues == null) {
+                        localClaimValues = new HashMap<>();
+                    }
+                    localClaimValues.put(FrameworkConstants.ASSOCIATED_ID, originalExternalIdpSubjectValueForThisStep);
+                    localClaimValues.put(FrameworkConstants.IDP_ID, stepConfig.getAuthenticatedIdP());
+                    handleJitProvisioning(originalExternalIdpSubjectValueForThisStep, context,
+                            locallyMappedUserRoles, localClaimValues);
+                }
+
                 if (stepConfig.isSubjectIdentifierStep()) {
                     // there can be only step for subject attributes.
 
@@ -381,33 +420,7 @@ public class DefaultStepBasedSequenceHandler implements StepBasedSequenceHandler
 
                 }
 
-                if (stepConfig.isSubjectAttributeStep()) {
-
-                    subjectAttributesFoundInStep = true;
-
-                    String idpRoleClaimUri = getIdpRoleClaimUri(externalIdPConfig);
-
-                    locallyMappedUserRoles = getLocallyMappedUserRoles(sequenceConfig,
-                            externalIdPConfig, extAttibutesValueMap, idpRoleClaimUri);
-
-                    if (idpRoleClaimUri != null && getServiceProviderMappedUserRoles(sequenceConfig,
-                            locallyMappedUserRoles) != null) {
-                        extAttibutesValueMap.put(idpRoleClaimUri, getServiceProviderMappedUserRoles(sequenceConfig,
-                                locallyMappedUserRoles));
-                    }
-
-                    if (mappedAttrs == null || mappedAttrs.isEmpty()) {
-                        // do claim handling
-                        mappedAttrs = handleClaimMappings(stepConfig, context,
-                                extAttibutesValueMap, true);
-                        // external claim values mapped to local claim uris.
-                        localClaimValues = (Map<String, String>) context
-                                .getProperty(FrameworkConstants.UNFILTERED_LOCAL_CLAIM_VALUES);
-
-                        idpClaimValues = (Map<String, String>) context
-                                .getProperty(FrameworkConstants.UNFILTERED_IDP_CLAIM_VALUES);
-                    }
-
+                if(stepConfig.isSubjectAttributeStep()) {
                     if (!sequenceConfig.getApplicationConfig().isMappedSubjectIDSelected()) {
                         // if we found the mapped subject - then we do not need to worry about
                         // finding attributes.
@@ -424,21 +437,7 @@ public class DefaultStepBasedSequenceHandler implements StepBasedSequenceHandler
                         }
                         authenticatedUserAttributes = FrameworkUtils.buildClaimMappings(mappedAttrs);
                     }
-
                 }
-
-                // do user provisioning. we should provision the user with the original external
-                // subject identifier.
-                if (externalIdPConfig.isProvisioningEnabled()) {
-
-                    if (localClaimValues == null) {
-                        localClaimValues = new HashMap<>();
-                    }
-
-                    handleJitProvisioning(originalExternalIdpSubjectValueForThisStep, context,
-                            locallyMappedUserRoles, localClaimValues);
-                }
-
             } else {
 
                 if (stepConfig.isSubjectIdentifierStep()) {
