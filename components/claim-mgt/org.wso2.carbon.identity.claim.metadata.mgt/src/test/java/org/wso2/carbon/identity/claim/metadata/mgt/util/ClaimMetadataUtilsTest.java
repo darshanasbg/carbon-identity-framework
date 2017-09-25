@@ -17,6 +17,7 @@ package org.wso2.carbon.identity.claim.metadata.mgt.util;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.claim.metadata.mgt.dto.*;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.AttributeMapping;
@@ -312,20 +313,96 @@ public class ClaimMetadataUtilsTest {
         Assert.assertEquals(externalClaim.getMappedLocalClaim(), externalClaimDTO.getMappedLocalClaimURI());
     }
 
-    @Test
-    public void testConvertLocalClaimToClaimMapping() throws Exception {
+    @DataProvider(name = "Authentication")
+    public Object[][] credentials() {
 
-        ClaimMapping claimMapping = ClaimMetadataUtils.convertLocalClaimToClaimMapping(localClaim2, -1234);
+        String localClaimURI3 = "testLocalClaimURI3";
+        AttributeMapping attributeMapping1 = new AttributeMapping(UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME,
+                "uid");
+        AttributeMapping attributeMapping2 = new AttributeMapping("AD", "sAMAccountName");
 
-        Assert.assertEquals(claimMapping.getClaim().getDialectURI(), localClaim2.getClaimDialectURI());
-        Assert.assertEquals(claimMapping.getClaim().getClaimUri(), localClaim2.getClaimURI());
+        List<AttributeMapping> attributeMappingList = new ArrayList<>();
+        attributeMappingList.add(attributeMapping1);
+        attributeMappingList.add(attributeMapping2);
 
-        Assert.assertEquals(claimMapping.getClaim().getDisplayTag(),
-                localClaim2.getClaimProperties().get(ClaimConstants.DISPLAY_NAME_PROPERTY));
-        Assert.assertEquals(claimMapping.getClaim().isReadOnly(),
-                Boolean.parseBoolean(localClaim2.getClaimProperties().get(ClaimConstants.READ_ONLY_PROPERTY)));
+        Map<String, String> claimPropertiesMap = new HashMap<>();
+        claimPropertiesMap.put(ClaimConstants.DISPLAY_NAME_PROPERTY, "username");
+        claimPropertiesMap.put(ClaimConstants.DESCRIPTION_PROPERTY, "Username of the system");
+        claimPropertiesMap.put(ClaimConstants.REGULAR_EXPRESSION_PROPERTY, "^[\\S]{5,30}$");
+        claimPropertiesMap.put(ClaimConstants.DISPLAY_ORDER_PROPERTY, "1");
+        claimPropertiesMap.put(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY, "true");
+        claimPropertiesMap.put(ClaimConstants.REQUIRED_PROPERTY, "true");
+        claimPropertiesMap.put(ClaimConstants.READ_ONLY_PROPERTY, "true");
+        claimPropertiesMap.put(ClaimConstants.DEFAULT_ATTRIBUTE, "uid");
 
-        for (AttributeMapping attributeMapping : localClaim2.getMappedAttributes()) {
+        LocalClaim localClaim3 = new LocalClaim(localClaimURI3, attributeMappingList, claimPropertiesMap);
+
+
+        String localClaimURI4 = "testLocalClaimURI4";
+
+        Map<String, String> claimPropertiesMap2 = new HashMap<>();
+        claimPropertiesMap2.put(ClaimConstants.DISPLAY_NAME_PROPERTY, "username");
+        claimPropertiesMap2.put(ClaimConstants.DESCRIPTION_PROPERTY, "Username of the system");
+        claimPropertiesMap2.put(ClaimConstants.REGULAR_EXPRESSION_PROPERTY, "^[\\S]{5,30}$");
+        claimPropertiesMap2.put(ClaimConstants.DISPLAY_ORDER_PROPERTY, "1");
+        claimPropertiesMap2.put(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY, "false");
+        claimPropertiesMap2.put(ClaimConstants.REQUIRED_PROPERTY, "false");
+        claimPropertiesMap2.put(ClaimConstants.READ_ONLY_PROPERTY, "false");
+        claimPropertiesMap2.put(ClaimConstants.DEFAULT_ATTRIBUTE, "uid");
+
+        LocalClaim localClaim4 = new LocalClaim(localClaimURI3, attributeMappingList, claimPropertiesMap2);
+
+        return new Object[][] {{localClaim1}, {localClaim2}, {localClaim3}, {localClaim4}};
+
+    }
+
+    @Test(dataProvider = "Authentication")
+    public void testConvertLocalClaimToClaimMapping(LocalClaim localClaim) throws Exception {
+
+        ClaimMapping claimMapping = ClaimMetadataUtils.convertLocalClaimToClaimMapping(localClaim, -1234);
+
+        Assert.assertEquals(claimMapping.getClaim().getDialectURI(), localClaim.getClaimDialectURI());
+        Assert.assertEquals(claimMapping.getClaim().getClaimUri(), localClaim.getClaimURI());
+
+
+        Map<String, String> claimProperties = localClaim.getClaimProperties();
+
+        if (claimProperties.containsKey(ClaimConstants.DISPLAY_NAME_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDisplayTag(), claimProperties.get(ClaimConstants.
+                    DISPLAY_NAME_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.DESCRIPTION_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDescription(), claimProperties.get(ClaimConstants.
+                    DESCRIPTION_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.REGULAR_EXPRESSION_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getRegEx(), claimProperties.get(ClaimConstants.
+                    REGULAR_EXPRESSION_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.DISPLAY_ORDER_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDisplayOrder(), Integer.parseInt(claimProperties.get(
+                    ClaimConstants.DISPLAY_ORDER_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isSupportedByDefault(), Boolean.parseBoolean(claimProperties.
+                    get(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.REQUIRED_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isRequired(), Boolean.parseBoolean(claimProperties.get(
+                    ClaimConstants.REQUIRED_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.READ_ONLY_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isReadOnly(), Boolean.parseBoolean(claimProperties.get(
+                    ClaimConstants.READ_ONLY_PROPERTY)));
+        }
+
+        for (AttributeMapping attributeMapping : localClaim.getMappedAttributes()) {
             Assert.assertEquals(claimMapping.getMappedAttribute(attributeMapping.getUserStoreDomain()),
                     attributeMapping.getAttributeName());
         }
@@ -341,10 +418,43 @@ public class ClaimMetadataUtilsTest {
         Assert.assertEquals(claimMapping.getClaim().getDialectURI(), externalClaim.getClaimDialectURI());
         Assert.assertEquals(claimMapping.getClaim().getClaimUri(), externalClaim.getClaimURI());
 
-        Assert.assertEquals(claimMapping.getClaim().getDisplayTag(),
-                localClaim2.getClaimProperties().get(ClaimConstants.DISPLAY_NAME_PROPERTY));
-        Assert.assertEquals(claimMapping.getClaim().isReadOnly(),
-                Boolean.parseBoolean(localClaim2.getClaimProperties().get(ClaimConstants.READ_ONLY_PROPERTY)));
+        Map<String, String> claimProperties = localClaim2.getClaimProperties();
+
+        if (claimProperties.containsKey(ClaimConstants.DISPLAY_NAME_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDisplayTag(), claimProperties.get(ClaimConstants.
+                    DISPLAY_NAME_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.DESCRIPTION_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDescription(), claimProperties.get(ClaimConstants.
+                    DESCRIPTION_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.REGULAR_EXPRESSION_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getRegEx(), claimProperties.get(ClaimConstants.
+                    REGULAR_EXPRESSION_PROPERTY));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.DISPLAY_ORDER_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().getDisplayOrder(), Integer.parseInt(claimProperties.get(
+                    ClaimConstants.DISPLAY_ORDER_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isSupportedByDefault(), Boolean.parseBoolean(claimProperties.
+                    get(ClaimConstants.SUPPORTED_BY_DEFAULT_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.REQUIRED_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isRequired(), Boolean.parseBoolean(claimProperties.get(
+                    ClaimConstants.REQUIRED_PROPERTY)));
+        }
+
+        if (claimProperties.containsKey(ClaimConstants.READ_ONLY_PROPERTY)) {
+            Assert.assertEquals(claimMapping.getClaim().isReadOnly(), Boolean.parseBoolean(claimProperties.get(
+                    ClaimConstants.READ_ONLY_PROPERTY)));
+        }
+
 
         for (AttributeMapping attributeMapping : localClaim2.getMappedAttributes()) {
             Assert.assertEquals(claimMapping.getMappedAttribute(attributeMapping.getUserStoreDomain()),
