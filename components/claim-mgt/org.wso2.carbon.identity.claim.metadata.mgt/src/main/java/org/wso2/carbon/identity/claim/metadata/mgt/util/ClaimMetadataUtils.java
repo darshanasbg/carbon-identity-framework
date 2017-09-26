@@ -279,7 +279,13 @@ public class ClaimMetadataUtils {
                     break;
                 }
             }
-        } else {
+        }
+
+        if (claimMapping == null) {
+            claimMapping = new ClaimMapping();
+        }
+
+        if (claimMapping.getClaim() == null) {
             Claim claim = new Claim();
             claimMapping.setClaim(claim);
         }
