@@ -215,6 +215,8 @@ public abstract class FrameworkConstants {
         public static final String SESSION_DATA = "sessionData";
         public static final String AUTH_RESULT = "authResult";
         public static final String AUTH_REQUEST = "authRequest";
+        public static final String HTTP_REQUEST = "HttpServletRequest";
+        public static final String HTTP_RESPONSE = "HttpServletResponse";
 
         private RequestAttribute() {
         }
@@ -242,10 +244,10 @@ public abstract class FrameworkConstants {
         public static final String JS_TENANT_DOMAIN = "tenantDomain";
         public static final String JS_REQUESTED_ACR = "requestedAcr";
         public static final String JS_LAST_AUTHENTICATED_USER = "lastAuthenticatedUser";
+        public static final String JS_AUTHENTICATED_SUBJECT = "subject";
         public static final String JS_SELECTED_ACR = "selectedAcr";
         public static final String JS_REQUEST = "request";
         public static final String JS_RESPONSE = "response";
-        public static final String JS_INITIAL_REQUEST = "initialRequest";
         public static final String JS_HEADERS = "headers";
         public static final String JS_PARAMS = "params";
         public static final String JS_COOKIES = "cookies";
@@ -259,6 +261,8 @@ public abstract class FrameworkConstants {
         public static final String JS_COOKIE_VERSION = "version";
         public static final String JS_COOKIE_HTTP_ONLY = "httpOnly";
 
+        public static final String JS_USER_CLAIMS = "claims";
+
         public static final String PROP_CURRENT_NODE = "Adaptive.Auth.Current.Graph.Node";
 
         public static final String JS_FUNC_EXECUTE_STEP = "executeStep";
@@ -267,5 +271,11 @@ public abstract class FrameworkConstants {
         public static final String JS_FUNC_SEND_ERROR = "sendError";
         public static final String JS_SHOW_ERROR_PAGE = "showErrorPage";
         public static final String JS_PAGE_URI = "pageUri";
+
+        public static final String JS_CLAIM_MEMBER_LOCAL = "local";
+        public static final String JS_CLAIM_MEMBER_REMOTE = "remote";
+        public static final String JS_CLAIM_MEMBER_PUSH = "push";
+        public static final String JS_CLAIM_MEMBER_VALUE = "value";
+        public static final String JS_CLAIM_MEMBER_URI = "uri";
     }
 }

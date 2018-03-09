@@ -21,9 +21,9 @@
 package org.wso2.carbon.identity.mgt.endpoint.client;
 
 /**
- * The exception for ConsentMgtClient operations
+ * The exception for SelfRegistrationMgtClient operations
  */
-public class ConsentMgtClientException extends Exception {
+public class SelfRegistrationMgtClientException extends Exception {
 
     /**
      * Client exception with message and a throwable.
@@ -31,7 +31,7 @@ public class ConsentMgtClientException extends Exception {
      * @param message   Error message.
      * @param throwable Throwable.
      */
-    public ConsentMgtClientException(String message, Throwable throwable) {
+    public SelfRegistrationMgtClientException(String message, Throwable throwable) {
 
         super(message, throwable);
     }
@@ -41,7 +41,7 @@ public class ConsentMgtClientException extends Exception {
      *
      * @param message Error message
      */
-    public ConsentMgtClientException(String message) {
+    public SelfRegistrationMgtClientException(String message) {
 
         super(message);
     }

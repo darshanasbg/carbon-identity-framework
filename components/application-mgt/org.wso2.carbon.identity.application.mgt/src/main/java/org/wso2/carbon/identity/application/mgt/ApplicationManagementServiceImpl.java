@@ -72,6 +72,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static org.wso2.carbon.identity.application.mgt.ApplicationMgtUtil.isRegexValidated;
 import static org.wso2.carbon.identity.core.util.IdentityUtil.isValidPEMCertificate;
 
 /**
@@ -119,6 +120,11 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         }
 
         String applicationName = serviceProvider.getApplicationName();
+        if (!isRegexValidated(serviceProvider.getApplicationName())) {
+            throw new IdentityApplicationManagementException("The Application name " +
+                    serviceProvider.getApplicationName() + " is not valid! It is not adhering " +
+                    "to the regex " + ApplicationMgtUtil.APP_NAME_VALIDATING_REGEX);
+        }
         if (ApplicationManagementServiceComponent.getFileBasedSPs().containsKey(applicationName)) {
             throw new IdentityApplicationManagementException(
                     "Application with the same name loaded from the file system.");
@@ -240,12 +246,13 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                 return;
             }
         }
+        String applicationName = serviceProvider.getApplicationName();
 
         try {
             startTenantFlow(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
 
             IdentityServiceProviderCacheKey cacheKey = new IdentityServiceProviderCacheKey(
-                    serviceProvider.getApplicationName(), tenantDomain);
+                    applicationName, tenantDomain);
 
             IdentityServiceProviderCache.getInstance().clearCacheEntry(cacheKey);
 
@@ -256,14 +263,20 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
         try {
             // check whether user is authorized to update the application.
             startTenantFlow(tenantDomain, username);
-            if (!ApplicationConstants.LOCAL_SP.equals(serviceProvider.getApplicationName()) &&
-                    !ApplicationMgtUtil.isUserAuthorized(serviceProvider.getApplicationName(), username,
+            if (!ApplicationConstants.LOCAL_SP.equals(applicationName) &&
+                    !ApplicationMgtUtil.isUserAuthorized(applicationName, username,
                             serviceProvider.getApplicationID())) {
                 log.warn("Illegal Access! User " +
                         CarbonContext.getThreadLocalCarbonContext().getUsername() +
                         " does not have access to the application " +
-                        serviceProvider.getApplicationName());
+                        applicationName);
                 throw new IdentityApplicationManagementException("User not authorized");
+            }
+
+            if (!isRegexValidated(serviceProvider.getApplicationName())) {
+                throw new IdentityApplicationManagementException("The Application name " +
+                        serviceProvider.getApplicationName() + " is not valid! It is not adhering " +
+                        "to the regex " + ApplicationMgtUtil.APP_NAME_VALIDATING_REGEX);
             }
 
             ApplicationDAO appDAO = ApplicationMgtSystemConfig.getInstance().getApplicationDAO();
@@ -284,17 +297,17 @@ public class ApplicationManagementServiceImpl extends ApplicationManagementServi
                     .getRegistry(RegistryType.USER_GOVERNANCE);
 
             boolean exist = tenantGovReg.resourceExists(applicationNode);
-            if (exist && !StringUtils.equals(storedAppName, serviceProvider.getApplicationName())) {
-                ApplicationMgtUtil.renameAppPermissionPathNode(storedAppName, serviceProvider.getApplicationName());
+            if (exist && !StringUtils.equals(storedAppName, applicationName)) {
+                ApplicationMgtUtil.renameAppPermissionPathNode(storedAppName, applicationName);
             }
 
             if (serviceProvider.getPermissionAndRoleConfig() != null &&
                     ArrayUtils.isNotEmpty(serviceProvider.getPermissionAndRoleConfig().getPermissions())) {
-                ApplicationMgtUtil.updatePermissions(serviceProvider.getApplicationName(),
+                ApplicationMgtUtil.updatePermissions(applicationName,
                         serviceProvider.getPermissionAndRoleConfig().getPermissions());
             }
         } catch (Exception e) {
-            String error = "Error occurred while updating the application: " + serviceProvider.getApplicationName();
+            String error = "Error occurred while updating the application: " + applicationName;
             throw new IdentityApplicationManagementException(error, e);
         } finally {
             endTenantFlow();
