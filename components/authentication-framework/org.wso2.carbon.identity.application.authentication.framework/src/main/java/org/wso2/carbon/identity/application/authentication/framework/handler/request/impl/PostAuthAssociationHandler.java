@@ -122,13 +122,21 @@ public class PostAuthAssociationHandler extends AbstractPostAuthnHandler {
                     String associatedLocalUserName = null;
                     if (sequenceConfig.getApplicationConfig().isAlwaysSendMappedLocalSubjectId()) {
                         associatedLocalUserName = getUserNameAssociatedWith(context, stepConfig);
-                    }
-                    if (StringUtils.isNotEmpty(associatedLocalUserName)) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("AlwaysSendMappedLocalSubjectID is selected in service provider level, "
-                                    + "equavlent local user : " + associatedLocalUserName);
+
+                        if (StringUtils.isNotEmpty(associatedLocalUserName)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("AlwaysSendMappedLocalSubjectID is selected in service provider level, "
+                                        + "equivalent local user : " + associatedLocalUserName);
+                            }
+                            setAssociatedLocalUserToContext(associatedLocalUserName, context, stepConfig);
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("AlwaysSendMappedLocalSubjectID is selected in service provider level, "
+                                        + "equivalent local user is empty. Hence blocking the authentication.");
+                            }
+                            throw new PostAuthenticationFailedException("Authentication failed. Cannot find mapped " +
+                                    "local user.", "Cannot find mapped local user.");
                         }
-                        setAssociatedLocalUserToContext(associatedLocalUserName, context, stepConfig);
                     }
                 }
             }
