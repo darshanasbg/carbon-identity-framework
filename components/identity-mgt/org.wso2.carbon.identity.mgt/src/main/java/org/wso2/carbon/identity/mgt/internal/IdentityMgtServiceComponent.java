@@ -45,6 +45,8 @@ import org.wso2.carbon.identity.mgt.config.ConfigBuilder;
 import org.wso2.carbon.identity.mgt.config.EmailNotificationConfig;
 import org.wso2.carbon.identity.mgt.config.StorageType;
 import org.wso2.carbon.identity.mgt.constants.IdentityMgtConstants;
+import org.wso2.carbon.identity.mgt.listener.IdentityUserIdResolverListener;
+import org.wso2.carbon.identity.mgt.listener.IdentityUserNameResolverListener;
 import org.wso2.carbon.identity.mgt.listener.TenantManagementListener;
 import org.wso2.carbon.identity.mgt.listener.UserOperationsNotificationListener;
 import org.wso2.carbon.identity.mgt.listener.UserSessionTerminationListener;
@@ -206,6 +208,28 @@ public class IdentityMgtServiceComponent {
             log.error("Identity Management - UserOperationNotificationListener could not be registered.");
         }
 
+        ServiceRegistration identityUserIdResolverListener = context.getBundleContext()
+                .registerService(UserOperationEventListener.class.getName(), new IdentityUserIdResolverListener(),
+                        null);
+        if (identityUserIdResolverListener != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Identity Management - IdentityUserIdResolverListener registered.");
+            }
+        } else {
+            log.error("Identity Management - IdentityUserIdResolverListener could not be registered.");
+        }
+
+        ServiceRegistration identityUserNameResolverListener = context.getBundleContext()
+                .registerService(UserOperationEventListener.class.getName(), new IdentityUserNameResolverListener(),
+                        null);
+        if (identityUserNameResolverListener != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Identity Management - IdentityUserNameResolverListener registered.");
+            }
+        } else {
+            log.error("Identity Management - IdentityUserNameResolverListener could not be registered.");
+        }
+
         if(log.isDebugEnabled()) {
             log.debug("Identity Management bundle is activated");
         }
@@ -336,5 +360,22 @@ public class IdentityMgtServiceComponent {
     public static UserSessionManagementService getUserSessionManagementService() {
 
         return userSessionManagementService;
+    }
+
+    @Reference(name = "user.operation.event.listener.service", cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC, unbind = "unsetUserOperationEventListenerService")
+    protected synchronized void setUserOperationEventListenerService(
+            UserOperationEventListener userOperationEventListenerService) {
+
+        IdentityMgtServiceDataHolder.getInstance().addUserOperationEventListener(userOperationEventListenerService);
+    }
+
+    protected synchronized void unsetUserOperationEventListenerService(
+            UserOperationEventListener userOperationEventListenerService) {
+
+        if (userOperationEventListenerService != null) {
+            IdentityMgtServiceDataHolder.getInstance().getUserOperationEventListeners().remove(
+                    userOperationEventListenerService.getExecutionOrderId());
+        }
     }
 }
