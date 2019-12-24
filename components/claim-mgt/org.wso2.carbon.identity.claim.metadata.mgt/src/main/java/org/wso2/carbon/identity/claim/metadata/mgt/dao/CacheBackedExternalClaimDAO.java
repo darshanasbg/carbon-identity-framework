@@ -18,8 +18,8 @@ package org.wso2.carbon.identity.claim.metadata.mgt.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.identity.claim.metadata.mgt.cache.ExternalClaimCacheKey;
 import org.wso2.carbon.identity.claim.metadata.mgt.cache.ExternalClaimCache;
+import org.wso2.carbon.identity.claim.metadata.mgt.cache.ExternalClaimCacheKey;
 import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.ExternalClaim;
 

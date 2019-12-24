@@ -16,10 +16,9 @@
 
 package org.wso2.carbon.identity.claim.metadata.mgt.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import java.io.Serializable;
 
 /**
  * Represents the simplest form of the metadata of a claim.

@@ -54,7 +54,8 @@ public class ClaimMetadataManagementAdminService {
 
             ClaimDialect[] claimDialects = claimDialectList.toArray(new ClaimDialect[0]);
 
-            ClaimDialectDTO[] claimDialectDTOS = ClaimMetadataUtils.convertClaimDialectsToClaimDialectDTOs(claimDialects);
+            ClaimDialectDTO[] claimDialectDTOS =
+                    ClaimMetadataUtils.convertClaimDialectsToClaimDialectDTOs(claimDialects);
 
             // Sort the claim dialects in the alphabetical order
             Arrays.sort(claimDialectDTOS, new Comparator<ClaimDialectDTO>() {
@@ -210,7 +211,8 @@ public class ClaimMetadataManagementAdminService {
 
             ExternalClaim[] externalClaims = externalClaimList.toArray(new ExternalClaim[0]);
 
-            ExternalClaimDTO[] externalClaimDTOS = ClaimMetadataUtils.convertExternalClaimsToExternalClaimDTOs(externalClaims);
+            ExternalClaimDTO[] externalClaimDTOS =
+                    ClaimMetadataUtils.convertExternalClaimsToExternalClaimDTOs(externalClaims);
 
             // Sort the external claims in the alphabetical order
             Arrays.sort(externalClaimDTOS, new Comparator<ExternalClaimDTO>() {

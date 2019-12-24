@@ -18,6 +18,12 @@ package org.wso2.carbon.identity.claim.metadata.mgt.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementServiceImpl;
 import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataStoreFactory;
@@ -26,12 +32,6 @@ import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.claim.ClaimManagerFactory;
 import org.wso2.carbon.user.core.listener.ClaimManagerListener;
 import org.wso2.carbon.user.core.service.RealmService;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 
 @SuppressWarnings("unused")
 @Component(
@@ -46,9 +46,11 @@ public class IdentityClaimManagementServiceComponent {
         try {
             IdentityClaimManagementServiceDataHolder.getInstance().setBundleContext(ctxt.getBundleContext());
             ClaimMetadataStoreFactory claimMetadataStoreFactory = new ClaimMetadataStoreFactory();
-            ctxt.getBundleContext().registerService(ClaimManagerFactory.class.getName(), claimMetadataStoreFactory, null);
+            ctxt.getBundleContext().registerService(ClaimManagerFactory.class.getName(), claimMetadataStoreFactory,
+                    null);
             ClaimMetadataManagementService claimManagementService = new ClaimMetadataManagementServiceImpl();
-            ctxt.getBundleContext().registerService(ClaimMetadataManagementService.class.getName(), claimManagementService, null);
+            ctxt.getBundleContext().registerService(ClaimMetadataManagementService.class.getName(),
+                    claimManagementService, null);
             IdentityClaimManagementServiceDataHolder.getInstance().setClaimManagementService(claimManagementService);
             if (log.isDebugEnabled()) {
                 log.debug("Identity Claim Management Core bundle is activated");

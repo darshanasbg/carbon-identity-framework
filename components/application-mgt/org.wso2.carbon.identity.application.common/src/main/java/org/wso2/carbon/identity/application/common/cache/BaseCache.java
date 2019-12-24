@@ -18,13 +18,13 @@
 
 package org.wso2.carbon.identity.application.common.cache;
 
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.caching.impl.CacheImpl;
 import org.wso2.carbon.caching.impl.CachingConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.common.listener.AbstractCacheListener;
 import org.wso2.carbon.identity.core.model.IdentityCacheConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
-import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 import java.io.Serializable;
 import java.util.ArrayList;

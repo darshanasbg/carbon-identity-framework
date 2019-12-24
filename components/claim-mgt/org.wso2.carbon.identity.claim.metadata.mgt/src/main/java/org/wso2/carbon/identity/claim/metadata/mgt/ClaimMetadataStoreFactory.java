@@ -26,6 +26,7 @@ import org.wso2.carbon.user.core.claim.inmemory.ClaimConfig;
 import org.wso2.carbon.user.core.claim.inmemory.FileBasedClaimBuilder;
 
 import java.io.IOException;
+
 import javax.xml.stream.XMLStreamException;
 
 /**

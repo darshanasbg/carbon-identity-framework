@@ -66,7 +66,7 @@ public class CacheBackedClaimDialectDAO extends ClaimDialectDAO {
         if (log.isDebugEnabled()) {
             log.debug("Claim dialect: " + oldClaimDialect.getClaimDialectURI() + " is renamed to new claim dialect: "
                     + newClaimDialect.getClaimDialectURI() + " for tenant: " + tenantId + ". Invalidated " +
-                    "ClaimDialectCache." );
+                    "ClaimDialectCache.");
         }
     }
 

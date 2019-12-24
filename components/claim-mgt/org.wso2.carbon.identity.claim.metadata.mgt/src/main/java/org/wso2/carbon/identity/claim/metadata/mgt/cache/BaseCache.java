@@ -21,13 +21,14 @@ import org.wso2.carbon.caching.impl.CachingConstants;
 import org.wso2.carbon.identity.core.model.IdentityCacheConfig;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 
+import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
+
 import javax.cache.Cache;
 import javax.cache.CacheBuilder;
 import javax.cache.CacheConfiguration;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
-import java.io.Serializable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A base class for all cache implementations in Claim metatada management modules.
@@ -113,7 +114,7 @@ public class BaseCache<K extends Serializable, V extends Serializable> {
             return null;
         }
 
-        if(key == null) {
+        if (key == null) {
             return null;
         }
 

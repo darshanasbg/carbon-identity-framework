@@ -64,11 +64,11 @@ public class ClaimMetadataHandler {
         try {
             ClaimMetadataManagementServiceImpl claimMetadataService = new ClaimMetadataManagementServiceImpl();
 
-            if (otherDialectURI.equals(UserCoreConstants.DEFAULT_CARBON_DIALECT) ) {
+            if (otherDialectURI.equals(UserCoreConstants.DEFAULT_CARBON_DIALECT)) {
 
                 List<LocalClaim> localClaims = claimMetadataService.getLocalClaims(tenantDomain);
 
-                if (otherClaimURIs == null|| otherClaimURIs.isEmpty()) {
+                if (otherClaimURIs == null || otherClaimURIs.isEmpty()) {
 
                     for (LocalClaim localClaim : localClaims) {
                         ExternalClaim claimMapping = new ExternalClaim(localClaim.getClaimDialectURI(), localClaim

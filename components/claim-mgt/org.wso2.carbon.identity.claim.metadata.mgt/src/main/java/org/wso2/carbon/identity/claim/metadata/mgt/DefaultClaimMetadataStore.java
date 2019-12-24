@@ -173,8 +173,8 @@ public class DefaultClaimMetadataStore implements ClaimMetadataStore {
                         ExternalClaimDAO externalClaimDAO = new ExternalClaimDAO();
                         externalClaimDAO.addExternalClaim(externalClaim, tenantId);
                     } catch (ClaimMetadataException e) {
-                        log.error("Error while adding external claim " + claimURI + " to dialect " + claimDialectURI,
-                                e);
+                        log.error("Error while adding external claim " + claimURI + " to dialect " +
+                                claimDialectURI, e);
                     }
 
                 }
@@ -337,8 +337,9 @@ public class DefaultClaimMetadataStore implements ClaimMetadataStore {
         if (StringUtils.isNotBlank(mappedAttribute)) {
 
             if (log.isDebugEnabled()) {
-                log.debug("Assigned mapped attribute : " + mappedAttribute + " from " + ClaimConstants.DEFAULT_ATTRIBUTE +
-                        " property for claim : " + localClaim.getClaimURI() + " in tenant : " + tenantId);
+                log.debug("Assigned mapped attribute : " + mappedAttribute + " from " +
+                        ClaimConstants.DEFAULT_ATTRIBUTE + " property for claim : " + localClaim.getClaimURI() +
+                        " in tenant : " + tenantId);
             }
 
             return mappedAttribute;

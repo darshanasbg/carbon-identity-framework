@@ -450,7 +450,8 @@ public class ClaimMetadataUtilsTest {
     public void testConvertExternalClaimToClaimMapping() throws Exception {
 
         List<LocalClaim> localClaimList = Arrays.asList(localClaims);
-        ClaimMapping claimMapping = ClaimMetadataUtils.convertExternalClaimToClaimMapping(externalClaim, localClaimList, -1234);
+        ClaimMapping claimMapping = ClaimMetadataUtils.convertExternalClaimToClaimMapping(externalClaim,
+                localClaimList, -1234);
 
         Assert.assertEquals(claimMapping.getClaim().getDialectURI(), externalClaim.getClaimDialectURI());
         Assert.assertEquals(claimMapping.getClaim().getClaimUri(), externalClaim.getClaimURI());
