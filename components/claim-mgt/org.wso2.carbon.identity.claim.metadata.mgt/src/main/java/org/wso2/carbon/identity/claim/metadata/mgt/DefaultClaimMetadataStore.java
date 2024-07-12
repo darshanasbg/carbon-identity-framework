@@ -28,6 +28,7 @@ import org.wso2.carbon.identity.claim.metadata.mgt.dao.ExternalClaimDAO;
 import org.wso2.carbon.identity.claim.metadata.mgt.dao.LocalClaimDAO;
 import org.wso2.carbon.identity.claim.metadata.mgt.exception.ClaimMetadataException;
 import org.wso2.carbon.identity.claim.metadata.mgt.internal.IdentityClaimManagementServiceDataHolder;
+import org.wso2.carbon.identity.claim.metadata.mgt.internal.impl.DefaultClaimConfigInitDAO;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.AttributeMapping;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.ClaimDialect;
 import org.wso2.carbon.identity.claim.metadata.mgt.model.ExternalClaim;
@@ -72,8 +73,20 @@ public class DefaultClaimMetadataStore implements ClaimMetadataStore {
 
         try {
             if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
-                IdentityClaimManagementServiceDataHolder.getInstance().getClaimConfigInitDAO()
-                        .initClaimConfig(claimConfig, tenantId);
+                ClaimConfigInitDAO initDAO = IdentityClaimManagementServiceDataHolder.getInstance().getClaimConfigInitDAO();
+                initDAO.initClaimConfig(claimConfig, tenantId);
+
+                if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
+                    log.warn("Claim initialization failed using " + initDAO.getClass() + " for tenant : " + tenantId +
+                            ". Falling back to default claim initialization.");
+
+                    DefaultClaimConfigInitDAO defaultClaimConfigInitDAO = new DefaultClaimConfigInitDAO();
+                    defaultClaimConfigInitDAO.initClaimConfig(claimConfig, tenantId);
+
+                    if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
+                        log.error("Claim initialization failed for tenant : " + tenantId);
+                    }
+                }
             }
         } catch (ClaimMetadataException e) {
             log.error("Error while retrieving claim dialects", e);
