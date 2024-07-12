@@ -99,7 +99,9 @@ public class DefaultClaimMetadataStore implements ClaimMetadataStore {
                         if ("http://wso2.org/claims/emailaddress".equalsIgnoreCase(localClaim.getClaimURI()) ||
                                 "http://wso2.org/claims/username".equalsIgnoreCase(localClaim.getClaimURI()) ||
                                 "http://wso2.org/claims/displayName".equalsIgnoreCase(localClaim.getClaimURI()) ||
-                                "http://wso2.org/claims/url".equalsIgnoreCase(localClaim.getClaimURI())) {
+                                "http://wso2.org/claims/url".equalsIgnoreCase(localClaim.getClaimURI()) ||
+                                "http://wso2.org/claims/role".equalsIgnoreCase(localClaim.getClaimURI()) ||
+                                "http://wso2.org/claims/userid".equalsIgnoreCase(localClaim.getClaimURI())) {
                             log.info("Claim initialization successful. Created " + localClaim.getClaimURI() +
                                     " claim for tenant : " + tenantId);
                         }
