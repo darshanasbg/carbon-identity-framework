@@ -72,19 +72,37 @@ public class DefaultClaimMetadataStore implements ClaimMetadataStore {
     public DefaultClaimMetadataStore(ClaimConfig claimConfig, int tenantId) {
 
         try {
-            if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
+            int dialectCount = claimDialectDAO.getClaimDialects(tenantId).size();
+            if (dialectCount == 0) {
                 ClaimConfigInitDAO initDAO = IdentityClaimManagementServiceDataHolder.getInstance().getClaimConfigInitDAO();
                 initDAO.initClaimConfig(claimConfig, tenantId);
 
-                if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
+                List<ClaimDialect> claimDialects = claimDialectDAO.getClaimDialects(tenantId);
+                dialectCount = claimDialects.size();
+                if (dialectCount == 0) {
                     log.warn("Claim initialization failed using " + initDAO.getClass() + " for tenant : " + tenantId +
                             ". Falling back to default claim initialization.");
 
                     DefaultClaimConfigInitDAO defaultClaimConfigInitDAO = new DefaultClaimConfigInitDAO();
                     defaultClaimConfigInitDAO.initClaimConfig(claimConfig, tenantId);
 
-                    if (claimDialectDAO.getClaimDialects(tenantId).size() == 0) {
+                    claimDialects = claimDialectDAO.getClaimDialects(tenantId);
+                    dialectCount = claimDialects.size();
+                    if (dialectCount == 0) {
                         log.error("Claim initialization failed for tenant : " + tenantId);
+                    }
+                } else {
+                    List<LocalClaim> localClaimList = localClaimDAO.getLocalClaims(tenantId);
+                    log.info("Claim initialization successful. Created " + dialectCount +
+                            " claim dialects for tenant : " + tenantId);
+                    for (LocalClaim localClaim: localClaimList) {
+                        if ("http://wso2.org/claims/emailaddress".equalsIgnoreCase(localClaim.getClaimURI()) ||
+                                "http://wso2.org/claims/username".equalsIgnoreCase(localClaim.getClaimURI()) ||
+                                "http://wso2.org/claims/displayName".equalsIgnoreCase(localClaim.getClaimURI()) ||
+                                "http://wso2.org/claims/url".equalsIgnoreCase(localClaim.getClaimURI())) {
+                            log.info("Claim initialization successful. Created " + localClaim.getClaimURI() +
+                                    " claim for tenant : " + tenantId);
+                        }
                     }
                 }
             }
