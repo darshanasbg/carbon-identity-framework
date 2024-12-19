@@ -79,6 +79,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
     private Map<String, List<String>> dummyBasicProperties;
     private Map<String, List<String>> dummyAdvProperties;
     private Map<String, List<String>> dummyPropertiesWithAnIssuerQualifier;
+    private MockedStatic<IdentityTenantUtil> identityTenantUtil;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -102,7 +103,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
             }
         }).when(mockRegistry).beginTransaction();
 
-        objUnderTest = new SAMLSSOServiceProviderRegistryDAOImpl(mockRegistry);
+        objUnderTest = new SAMLSSOServiceProviderRegistryDAOImpl();
         when(mockRegistry.newResource()).thenReturn(new ResourceImpl());
     }
 
@@ -346,7 +347,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
                     + IdentityRegistryResources.QUALIFIER_ID + dummyResource.getProperty(IdentityRegistryResources.
                     PROP_SAML_SSO_ISSUER_QUALIFIER));
         }
-        objUnderTest.addServiceProvider(serviceProviderDO);
+        objUnderTest.addServiceProvider(serviceProviderDO, -1234);
         verify(mockRegistry).put(captor.capture(), any(Resource.class));
         assertEquals(captor.getValue(), expectedPath, "Resource is not added at correct path");
     }
@@ -357,7 +358,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String existingPath = getPath("existingIssuer");
         serviceProviderDO.setIssuer("existingIssuer");
         when(mockRegistry.resourceExists(existingPath)).thenReturn(true);
-        assertFalse(objUnderTest.addServiceProvider(serviceProviderDO), "Resource should not have added.");
+        assertFalse(objUnderTest.addServiceProvider(serviceProviderDO, -1234), "Resource should not have added.");
     }
 
     @Test(expectedExceptions = {IdentityException.class})
@@ -367,7 +368,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String existingPath = getPath("erringIssuer");
         serviceProviderDO.setIssuer("erringIssuer");
         doThrow(RegistryException.class).when(mockRegistry).put(eq(existingPath), any(Resource.class));
-        objUnderTest.addServiceProvider(serviceProviderDO);
+        objUnderTest.addServiceProvider(serviceProviderDO, -1234);
     }
 
     @Test(dataProvider = "ResourceToObjectData")
@@ -386,7 +387,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         }
         String expectedPath = getPath(existingIssuer);
         when(mockRegistry.resourceExists(expectedPath)).thenReturn(true);
-        objUnderTest.updateServiceProvider(serviceProviderDO, existingIssuer);
+        objUnderTest.updateServiceProvider(serviceProviderDO, existingIssuer, -1234);
         verify(mockRegistry).put(captor.capture(), any(Resource.class));
         assertEquals(captor.getValue(), expectedPath, "Resource is not added at correct path");
     }
@@ -396,7 +397,8 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         SAMLSSOServiceProviderDO serviceProviderDO = new SAMLSSOServiceProviderDO();
         serviceProviderDO.setIssuer("newIssuer");
         when(mockRegistry.resourceExists(getPath("newIssuer"))).thenReturn(true);
-        assertFalse(objUnderTest.updateServiceProvider(serviceProviderDO, "existingIssuer"), "Resource should not have updated.");
+        assertFalse(objUnderTest.updateServiceProvider(serviceProviderDO, "existingIssuer", -1234),
+                "Resource should not have updated.");
     }
 
     @Test
@@ -429,7 +431,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         when(mockRegistry.resourceExists(paths[0])).thenReturn(true);
         when(mockRegistry.resourceExists(paths[1])).thenReturn(true);
         when(mockRegistry.resourceExists(paths[2])).thenReturn(true);
-        SAMLSSOServiceProviderDO[] serviceProviders = objUnderTest.getServiceProviders();
+        SAMLSSOServiceProviderDO[] serviceProviders = objUnderTest.getServiceProviders(-1234);
         assertEquals(serviceProviders.length, 3, "Should have returned 3 service providers.");
     }
 
@@ -438,7 +440,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String existingIssuer = "ExistingIssuer";
         String path = getPath(existingIssuer);
         when(mockRegistry.resourceExists(path)).thenReturn(true);
-        assertTrue(objUnderTest.removeServiceProvider(existingIssuer), "SP Resource is not deleted from path");
+        assertTrue(objUnderTest.removeServiceProvider(existingIssuer, -1234), "SP Resource is not deleted from path");
     }
 
     @Test
@@ -446,13 +448,13 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String nonExistingIssuer = "NonExistingIssuer";
         String path = getPath(nonExistingIssuer);
         when(mockRegistry.resourceExists(path)).thenReturn(false);
-        assertFalse(objUnderTest.removeServiceProvider(nonExistingIssuer), "SP Resource should not have existed to " +
+        assertFalse(objUnderTest.removeServiceProvider(nonExistingIssuer, -1234), "SP Resource should not have existed to " +
                 "delete.");
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testRemoveEmptyServiceProvider() throws Exception {
-        objUnderTest.removeServiceProvider("");
+        objUnderTest.removeServiceProvider("", -1234);
         fail("SP Resource with empty name could not have been deleted.");
     }
 
@@ -475,7 +477,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         when(mockRegistry.get(path)).thenReturn(dummyResource);
 
         SAMLSSOServiceProviderDO serviceProviderDO = objUnderTest.getServiceProvider(dummyResource.getProperty
-                (IdentityRegistryResources.PROP_SAML_SSO_ISSUER));
+                (IdentityRegistryResources.PROP_SAML_SSO_ISSUER), -1234);
         assertEquals(serviceProviderDO.getTenantDomain(), "test.com", "Retrieved resource's tenant domain mismatch");
     }
 
@@ -484,7 +486,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String validSP = "ValidSP";
         String path = getPath(validSP);
         when(mockRegistry.resourceExists(path)).thenReturn(true);
-        assertTrue(objUnderTest.isServiceProviderExists(validSP));
+        assertTrue(objUnderTest.isServiceProviderExists(validSP, -1234));
     }
 
     @Test
@@ -492,7 +494,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
         String invalidSP = "InvalidSP";
         String path = getPath(invalidSP);
         when(mockRegistry.resourceExists(path)).thenReturn(false);
-        assertFalse(objUnderTest.isServiceProviderExists(invalidSP));
+        assertFalse(objUnderTest.isServiceProviderExists(invalidSP, -1234));
     }
 
     @Test
@@ -506,7 +508,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
                 .getProperty(IdentityRegistryResources.PROP_SAML_SSO_ISSUER));
         when(mockRegistry.resourceExists(expectedPath)).thenReturn(false);
         SAMLSSOServiceProviderDO serviceProviderDO = objUnderTest.resourceToObject(dummyResource);
-        assertEquals(objUnderTest.uploadServiceProvider(serviceProviderDO), serviceProviderDO, "Same resource should" +
+        assertEquals(objUnderTest.uploadServiceProvider(serviceProviderDO, -1234), serviceProviderDO, "Same resource should" +
                 " have returned after successful upload.");
     }
 
@@ -521,7 +523,7 @@ public class SAMLSSOServiceProviderDAOTest extends PowerMockTestCase {
                 .getProperty(IdentityRegistryResources.PROP_SAML_SSO_ISSUER));
         when(mockRegistry.resourceExists(expectedPath)).thenReturn(true);
         SAMLSSOServiceProviderDO serviceProviderDO = objUnderTest.resourceToObject(dummyResource);
-        objUnderTest.uploadServiceProvider(serviceProviderDO);
+        objUnderTest.uploadServiceProvider(serviceProviderDO, -1234);
         fail("Uploading an existing SP should have failed");
     }
 
