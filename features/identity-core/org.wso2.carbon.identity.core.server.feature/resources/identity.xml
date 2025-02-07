@@ -78,6 +78,8 @@
     <DataStorageType>
         <NotificationTemplates>database</NotificationTemplates>
         <SAML>database</SAML>
+        <AdminAdvisoryBanner>database</AdminAdvisoryBanner>
+        <RemoteLoggingConfig>database</RemoteLoggingConfig>
     </DataStorageType>
 
     <!-- Time configurations are in minutes -->
